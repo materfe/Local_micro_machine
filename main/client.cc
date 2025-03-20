@@ -12,6 +12,8 @@
 
 
 int main() {
+
+
   static constexpr std::int8_t player_amount = 10;
   static constexpr sf::Vector2f player_position(600.0f, 350.0f);
   static constexpr float player_radius = 25.0f;
