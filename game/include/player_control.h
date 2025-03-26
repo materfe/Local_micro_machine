@@ -6,7 +6,6 @@
 #define MICROMACHINE_INCLUDE_PLAYER_CONTROL_H_
 
 #include <SFML/System.hpp>
-
 namespace micromachine::player {
 
 class Car {
@@ -16,10 +15,9 @@ class Car {
 
  public:
 
-  explicit Car(sf::Vector2<float> new_position = sf::Vector2f(0.0f, 0.0f), sf::Vector2<float> new_velocity = sf::Vector2f(0.0f, 0.0f)) : position_(
+  explicit Car(sf::Vector2<float> new_position = sf::Vector2f(0.0f, 0.0f),
+               sf::Vector2<float> new_velocity = sf::Vector2f(0.0f, 0.0f)) : position_(
       new_position), velocity_(new_velocity) {};
-
-
 
   void Tick(float delta_time);
 

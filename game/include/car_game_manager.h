@@ -17,11 +17,11 @@ class Manager final {
 
  public:
   explicit Manager(std::int32_t amount_of_players = 0) : amount_of_players_(amount_of_players) {
-    all_players_.resize(amount_of_players_);
+    all_players_.reserve(amount_of_players_);
   }
 
 
-  std::vector<player::Car> AllPlayers(){return all_players_;}
+  std::vector<player::Car>& AllPlayers(){return all_players_;}
 
   void AllTicks(float delta_time);
   void AddPlayer(const player::Car& player);
