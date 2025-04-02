@@ -8,11 +8,52 @@
 
 #include "playlist.h"
 #include "car_game_manager.h"
+#include "rendering_system.h"
+
+namespace client {
+void Events(float player_given_velocity,
+            float player_speed,
+            micromachine::car_game_manager::Manager &manager,
+            const std::optional<sf::Event> &event) {
+  if (event->is<sf::Event::KeyPressed>()) {
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
+      sf::Vector2<float> new_velocity_01 = sf::Vector2f(0.0f, -1 * (player_given_velocity * player_speed));
+      sf::Vector2<float> new_velocity_02 = sf::Vector2f(0.0f, (player_given_velocity * player_speed));
+
+      //player_one.MoveAt(new_velocity);
+      manager.AllPlayers()[0].MoveAt(new_velocity_01);
+      manager.AllPlayers()[1].MoveAt(new_velocity_02);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+      sf::Vector2<float> new_velocity_01 = sf::Vector2f(0.0f, player_given_velocity * player_speed);
+      sf::Vector2<float> new_velocity_02 = sf::Vector2f(0.0f, -1 * (player_given_velocity * player_speed));
+
+      //player_one.MoveAt(new_velocity);
+      manager.AllPlayers()[0].MoveAt(new_velocity_01);
+      manager.AllPlayers()[1].MoveAt(new_velocity_02);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+      sf::Vector2<float> new_velocity_01 = sf::Vector2f(-1 * player_given_velocity * player_speed, 0.0f);
+      sf::Vector2<float> new_velocity_02 = sf::Vector2f(player_given_velocity * player_speed, 0.0f);
+
+      //player_one.MoveAt(new_velocity);
+      manager.AllPlayers()[0].MoveAt(new_velocity_01);
+      manager.AllPlayers()[1].MoveAt(new_velocity_02);
+    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+      sf::Vector2<float> new_velocity_01 = sf::Vector2f(player_given_velocity * player_speed, 0.0f);
+      sf::Vector2<float> new_velocity_02 = sf::Vector2f(-1 * (player_given_velocity * player_speed), 0.0f);
+
+      //player_one.MoveAt(new_velocity);
+      manager.AllPlayers()[0].MoveAt(new_velocity_01);
+      manager.AllPlayers()[1].MoveAt(new_velocity_02);
+    }
+  }
+}
+}
 
 int main() {
   static constexpr std::int8_t player_amount = 10;
   static constexpr sf::Vector2f player_one_position(400.0f, 350.0f);
   static constexpr sf::Vector2f player_two_position(800.0f, 350.0f);
+  static constexpr sf::Vector2i window_size(1280, 720);
   static constexpr float player_radius = 25.0f;
   static constexpr sf::Color player_one_color(200, 35, 50, 255);
   static constexpr sf::Color player_two_color(30, 30, 255, 255);
@@ -20,7 +61,8 @@ int main() {
   static constexpr float player_given_velocity = 30.0f;
   static constexpr float player_speed = 5.0f;
 
-  //manager
+  //1.
+  //manager ----------------------------------------------------------------------------------
   micromachine::car_game_manager::Manager manager(player_amount);
   //player one
   micromachine::player::Car player_one(player_one_position);
@@ -28,81 +70,53 @@ int main() {
   manager.AddPlayer(player_one);
   manager.AddPlayer(player_two);
 
-  auto player_representation_01 = sf::CircleShape(player_radius, 3); //making triangles
+  //2.
+  //set shapes --------------------------------------------------------------------------------
+  auto player_representation_01 = sf::CircleShape(player_radius, 3);
   player_representation_01.setFillColor(player_one_color);
   player_representation_01.setOutlineColor(player_outline_color);
   player_representation_01.setOutlineThickness(-2.0f);
 
-  auto player_representation_02 = sf::CircleShape(player_radius, 3); //making triangles
+  auto player_representation_02 = sf::CircleShape(player_radius, 3);
   player_representation_02.setFillColor(player_two_color);
   player_representation_02.setOutlineColor(player_outline_color);
   player_representation_02.setOutlineThickness(-2.0f);
 
-  sf::RenderWindow window(sf::VideoMode({1280, 720}), "connect_8");
-  window.setFramerateLimit(60);
-  if (!ImGui::SFML::Init(window)) {
+  //3.
+  //set renderer ------------------------------------------------------------------------------
+  auto render = micromachine::rendering::Renderer(window_size.x, window_size.y, "MicroMachine");
+  render.FrameRateLimit(60);
+  render.VerticalSyncEnable(true);
+  if (!ImGui::SFML::Init(render.Window())) {
     std::cerr << "imgui error";
     return EXIT_FAILURE;
   }
 
+  //4.
+  //main loop ---------------------------------------------------------------------------------
   bool isOpen = true;
   sf::Clock deltaClock;
-
-  std::int8_t framerate_limit = 60;
-  window.setFramerateLimit(framerate_limit);
-  window.setVerticalSyncEnabled(true);
-
   while (isOpen) {
 
     auto delta = deltaClock.getElapsedTime().asMilliseconds();
 
-    while (const auto event = window.pollEvent()) {
-      ImGui::SFML::ProcessEvent(window, *event);
+    while (const auto event = render.Window().pollEvent()) {
+      ImGui::SFML::ProcessEvent(render.Window(), *event);
       if (event->is<sf::Event::Closed>()) {
         isOpen = false;
       }
-      if (event->is<sf::Event::KeyPressed>()) {
-        if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-          sf::Vector2<float> new_velocity_01 = sf::Vector2f(0.0f, -1 * (player_given_velocity * player_speed));
-          sf::Vector2<float> new_velocity_02 = sf::Vector2f(0.0f, (player_given_velocity * player_speed));
-
-          //player_one.MoveAt(new_velocity);
-          manager.AllPlayers()[0].MoveAt(new_velocity_01);
-          manager.AllPlayers()[1].MoveAt(new_velocity_02);
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-          sf::Vector2<float> new_velocity_01 = sf::Vector2f(0.0f, player_given_velocity * player_speed);
-          sf::Vector2<float> new_velocity_02 = sf::Vector2f(0.0f, -1 * (player_given_velocity * player_speed));
-
-          //player_one.MoveAt(new_velocity);
-          manager.AllPlayers()[0].MoveAt(new_velocity_01);
-          manager.AllPlayers()[1].MoveAt(new_velocity_02);
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-          sf::Vector2<float> new_velocity_01 = sf::Vector2f(-1 * player_given_velocity * player_speed, 0.0f);
-          sf::Vector2<float> new_velocity_02 = sf::Vector2f(player_given_velocity * player_speed, 0.0f);
-
-          //player_one.MoveAt(new_velocity);
-          manager.AllPlayers()[0].MoveAt(new_velocity_01);
-          manager.AllPlayers()[1].MoveAt(new_velocity_02);
-        } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-          sf::Vector2<float> new_velocity_01 = sf::Vector2f(player_given_velocity * player_speed, 0.0f);
-          sf::Vector2<float> new_velocity_02 = sf::Vector2f(-1 * (player_given_velocity * player_speed), 0.0f);
-
-          //player_one.MoveAt(new_velocity);
-          manager.AllPlayers()[0].MoveAt(new_velocity_01);
-          manager.AllPlayers()[1].MoveAt(new_velocity_02);
-        }
-      }
+      client::Events(player_given_velocity, player_speed, manager, event);
     }
 
 
     //IMGUI --------------------------------------------------------------------------------------------------------
-    ImGui::SFML::Update(window, deltaClock.restart());
-    auto [x, y] = window.getSize();
+    ImGui::SFML::Update(render.Window(), deltaClock.restart());
+    auto [x, y] = window_size;
     ImGui::SetNextWindowSize({(float) x, (float) y}, ImGuiCond_Always);
     ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Always);
     ImGui::Begin("Simple Chat", nullptr, ImGuiWindowFlags_NoTitleBar);
     ImGui::End();
-    ImGui::SFML::Render(window);
+    ImGui::SFML::Render(render.Window());
 
     //Ticks --------------------------------------------------------------------------------------------------------
     manager.AllTicks(static_cast<float>(delta));
@@ -112,10 +126,10 @@ int main() {
 
 
     //DRAW ---------------------------------------------------------------------------------------------------------
-    window.clear();
-    window.draw(player_representation_01);
-    window.draw(player_representation_02);
-    window.display();
+    render.Clear();
+    render.Draw(player_representation_01);
+    render.Draw(player_representation_02);
+    render.Display();
   }
 
   ImGui::SFML::Shutdown();

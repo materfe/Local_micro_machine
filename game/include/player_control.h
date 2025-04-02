@@ -22,8 +22,8 @@ class Car {
   void Tick(float delta_time);
 
   //set values
-  void MoveTo(sf::Vector2f new_position) { position_ = new_position; }
-  void MoveAt(sf::Vector2f new_velocity) { velocity_ = new_velocity; }
+  void MoveTo(sf::Vector2f new_position) { position_ += new_position; }
+  void MoveAt(sf::Vector2f new_velocity) { velocity_ += new_velocity; }
   sf::Vector2f Position() { return position_; }
   sf::Vector2f Velocity() { return velocity_; }
 };
