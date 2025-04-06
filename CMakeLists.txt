@@ -19,9 +19,8 @@ target_link_libraries(server PRIVATE api)
 
 #client
 add_executable(client main/client.cc)
-target_include_directories(client PRIVATE externals/SFML/include include externals/imgui-sfml externals/imgui)
-target_link_libraries(client PRIVATE sfml-network sfml-graphics ImGui-SFML)
-target_link_libraries(client PRIVATE api)
+target_include_directories(client PRIVATE externals/SFML/include externals/imgui-sfml externals/imgui)
+target_link_libraries(client PRIVATE sfml-network sfml-graphics ImGui-SFML api)
 
 if(MSVC)
     target_compile_options(client PRIVATE "/W3" "/WX" "/permissive-")
@@ -29,4 +28,4 @@ endif ()
 
 
 #copy resources in build
-#file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR})
+file(COPY ${CMAKE_SOURCE_DIR}/data DESTINATION ${CMAKE_BINARY_DIR})

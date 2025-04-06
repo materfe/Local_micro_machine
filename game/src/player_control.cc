@@ -1,16 +1,35 @@
-﻿#include <iostream>
-#include "player_control.h"
+﻿#include "player_control.h"
 
 namespace micromachine::player {
 
 void Car::Tick(const float delta_time) {
+  const float max_limit = 20.0f;
+  const float min_limit = -20.0f;
+
   if(delta_time > 0)
   {
-    position_.x += velocity_.x / delta_time;
-    position_.y += velocity_.y / delta_time;
+    velocity_ += velocity_ * delta_time;
 
-    //velocity_.x -= delta_time /2;
-    //sssvelocity_.y -= delta_time /2;
+    if(velocity_.x < min_limit)
+    {
+      velocity_.x = min_limit;
+    }
+    if(velocity_.y < min_limit)
+    {
+      velocity_.y = min_limit;
+    }
+    if(velocity_.x > max_limit)
+    {
+      velocity_.x = max_limit;
+    }
+    if(velocity_.y > max_limit)
+    {
+      velocity_.y = max_limit;
+    }
+
+    position_ += velocity_;
+
+    velocity_ /= delta_time;
   }
 }
 }

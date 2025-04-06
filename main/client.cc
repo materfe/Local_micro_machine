@@ -6,9 +6,11 @@
 
 #include <iostream>
 
+#include "const.h"
 #include "playlist.h"
 #include "car_game_manager.h"
 #include "rendering_system.h"
+#include "field.h"
 
 namespace client {
 void Events(float player_given_velocity,
@@ -44,6 +46,12 @@ void Events(float player_given_velocity,
       //player_one.MoveAt(new_velocity);
       manager.AllPlayers()[0].MoveAt(new_velocity_01);
       manager.AllPlayers()[1].MoveAt(new_velocity_02);
+    } else {
+      sf::Vector2<float> new_velocity_0 = sf::Vector2f (0.0f, 0.0f);
+
+      //player_one.MoveAt(new_velocity);
+      manager.AllPlayers()[0].MoveAt(new_velocity_0);
+      manager.AllPlayers()[1].MoveAt(new_velocity_0);
     }
   }
 }
@@ -53,13 +61,15 @@ int main() {
   static constexpr std::int8_t player_amount = 10;
   static constexpr sf::Vector2f player_one_position(400.0f, 350.0f);
   static constexpr sf::Vector2f player_two_position(800.0f, 350.0f);
-  static constexpr sf::Vector2i window_size(1280, 720);
   static constexpr float player_radius = 25.0f;
   static constexpr sf::Color player_one_color(200, 35, 50, 255);
   static constexpr sf::Color player_two_color(30, 30, 255, 255);
   static constexpr sf::Color player_outline_color(233, 233, 0, 255);
   static constexpr float player_given_velocity = 30.0f;
   static constexpr float player_speed = 5.0f;
+
+  micromachine::field::Tilemap tilemap;
+  tilemap.GeneratePath();
 
   //1.
   //manager ----------------------------------------------------------------------------------
@@ -84,7 +94,7 @@ int main() {
 
   //3.
   //set renderer ------------------------------------------------------------------------------
-  auto render = micromachine::rendering::Renderer(window_size.x, window_size.y, "MicroMachine");
+  auto render = micromachine::rendering::Renderer(WINDOW_WIDTH, WINDOW_HEIGHT, "MicroMachine");
   render.FrameRateLimit(60);
   render.VerticalSyncEnable(true);
   if (!ImGui::SFML::Init(render.Window())) {
@@ -111,7 +121,7 @@ int main() {
 
     //IMGUI --------------------------------------------------------------------------------------------------------
     ImGui::SFML::Update(render.Window(), deltaClock.restart());
-    auto [x, y] = window_size;
+    auto [x, y] = sf::Vector2<int>(WINDOW_WIDTH, WINDOW_HEIGHT);
     ImGui::SetNextWindowSize({(float) x, (float) y}, ImGuiCond_Always);
     ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Always);
     ImGui::Begin("Simple Chat", nullptr, ImGuiWindowFlags_NoTitleBar);
@@ -124,11 +134,14 @@ int main() {
     player_representation_01.setPosition(manager.AllPlayers()[0].Position());
     player_representation_02.setPosition(manager.AllPlayers()[1].Position());
 
-
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
     render.Draw(player_representation_01);
     render.Draw(player_representation_02);
+    for(auto& tile : tilemap.Map())
+    {
+      render.Draw(tile.Shape());
+    }
     render.Display();
   }
 
