@@ -69,7 +69,7 @@ int main() {
   static constexpr float player_speed = 5.0f;
 
   micromachine::field::Tilemap tilemap;
-  tilemap.GeneratePath();
+  tilemap.GenerateRandomMap();
 
   //1.
   //manager ----------------------------------------------------------------------------------

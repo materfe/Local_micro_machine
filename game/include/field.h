@@ -6,75 +6,62 @@
 #define MICROMACHINE_GAME_INCLUDE_FIELD_H_
 #include <vector>
 #include "SFML/Graphics.hpp"
+#include "SFML/Graphics/Drawable.hpp."
 
 #include "const.h"
 
 namespace micromachine::field {
 
-static constexpr std::int8_t TILE_SIZE = 32;
-static constexpr std::int32_t GRID_WIDTH = WINDOW_WIDTH / TILE_SIZE;
-static constexpr std::int32_t GRID_HEIGHT = WINDOW_HEIGHT / TILE_SIZE;
-static constexpr std::int32_t GENERATION_AMOUNT = 25;
+static constexpr std::int8_t TILE_SIZE = 16;
+static constexpr std::int8_t GRID_WIDTH = 20;
+static constexpr std::int8_t GRID_HEIGHT = 20;
+static constexpr std::int8_t GENERATION_NUMBER = 25;
+
+enum class TileType {
+  Grass,
+  Road
+};
 
 class Tile {
  private:
-  sf::RectangleShape shape_{};
-  sf::Vector2i position_{};
-  sf::Texture texture_{};
+  sf::RectangleShape shape_;
+  TileType type_ = TileType::Grass;
+  sf::Texture tex_;
 
-  void SetShape() {
-    shape_.setPosition(static_cast<sf::Vector2f>(position_));
-    shape_.setSize(sf::Vector2f(TILE_SIZE, TILE_SIZE));
-    shape_.setOutlineThickness(-1.0f);
-    shape_.setOutlineColor(sf::Color::White);
-  }
+  void ApplyTextToShape() { shape_.setTexture(&tex_); }
 
  public:
-  explicit Tile(sf::Vector2i pos, sf::Texture &text) : position_(pos), texture_(text) {
-    SetShape();
-  }
-  explicit Tile(sf::Vector2i pos) : position_(pos) {
-    SetShape();
+  explicit Tile(sf::Vector2i pos) {
+    shape_.setPosition(static_cast<sf::Vector2f>(pos));
+    shape_.setFillColor(sf::Color::White);
+    shape_.setOutlineThickness(-1.0f);
+    shape_.setOutlineColor(sf::Color::Red);
+    shape_.setSize({TILE_SIZE, TILE_SIZE});
   }
 
-  [[nodiscard]] sf::Vector2i Position() { return position_; }
-  [[nodiscard]] sf::RectangleShape &Shape() { return shape_; }
+  void SetType(TileType type) { type_ = type; }
+  TileType type() { return type_; }
+  sf::RectangleShape &Shape() { return shape_; }
+  void SetTextureTo(sf::Texture &texture) {
+    tex_ = texture;
+    ApplyTextToShape();
+  }
 };
 
 class Tilemap {
  private:
   std::vector<Tile> map_{};
-  std::array<bool, GRID_WIDTH*GRID_HEIGHT> visited_{false};
 
-  [[nodiscard]] static int getIndex(int x, int y) {
-    int index = y * GRID_WIDTH + x;
-    if (index < 0 || index >= GRID_WIDTH * GRID_HEIGHT) {
-      std::cerr << "Invalid index: " << index << " for pos (" << x << ", " << y << ")" << std::endl;
-    }
-    return index;
-  }
-
-  bool isVisited(int x, int y) {
-    auto index = getIndex(x, y);
-    return visited_[index];
-  }
-
-  void markVisited(int x, int y) {
-    visited_[getIndex(x, y)] = true;
-  }
-
-  void FulfillMap();
-
-  void FulfillVisited();
-
-  void SetTextures();
+  void InitializeMap();
+  static sf::Vector2<int> &RandomPathUpdate(sf::Vector2<int> &current_pos, int rnd);
+  void SetAllTextures();
 
  public:
   Tilemap() {
     map_.reserve(GRID_WIDTH * GRID_HEIGHT);
   }
 
-  void GeneratePath();
+  void GenerateRandomMap();
 
   std::vector<Tile> &Map() { return map_; }
 };

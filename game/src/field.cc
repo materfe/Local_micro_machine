@@ -4,81 +4,86 @@
 #include "field.h"
 
 namespace micromachine::field {
-void Tilemap::GeneratePath() {
-  sf::Vector2i pos(GRID_WIDTH / 2, GRID_HEIGHT / 2);
-  std::random_device gen;
-  std::uniform_int_distribution distribution(0, 3);
 
-  FulfillMap();
-  FulfillVisited();
+std::random_device r;
+std::default_random_engine e1(r());
+std::uniform_int_distribution uniform_dist(1, 4);
 
-  //create the path
-  for (int i = 0; i < GENERATION_AMOUNT; i++) {
-    int dir = distribution(gen);
-    if (dir == 0) pos.x++;
-    if (dir == 1) pos.x--;
-    if (dir == 2) pos.y++;
-    if (dir == 3) pos.y--;
-
-    // Bordures
-    if (pos.x < 0 || pos.x >= GRID_WIDTH || pos.y < 0 || pos.y >= GRID_HEIGHT)
-      continue;
-
-    if (isVisited(pos.x, pos.y))
-      continue;
-
-    markVisited(pos.x, pos.y);
-  }
-  SetTextures();
-}
-
-void Tilemap::FulfillMap() {
+void Tilemap::InitializeMap() {
   map_.clear();
-  for (int y = 0; y < GRID_HEIGHT; y++) {
-    for (int x = 0; x < GRID_WIDTH; x++) {
-      const auto new_tile = Tile({x, y});
+
+  for (int x = 0; x < GRID_WIDTH; x++) {
+    for (int y = 0; y < GRID_HEIGHT; y++) {
+      const auto new_tile = Tile({x * TILE_SIZE, y * TILE_SIZE});
       map_.emplace_back(new_tile);
     }
   }
 
 }
 
-void Tilemap::FulfillVisited() {
-  for(auto& element : visited_)
-  {
-    element = false;
+void Tilemap::GenerateRandomMap() {
+  InitializeMap();
+
+  auto current_pos = sf::Vector2i(GRID_WIDTH / 2, GRID_HEIGHT / 2);
+
+  for (int gen = 0; gen < GENERATION_NUMBER; gen++) {
+    //random setup
+    const int rnd = uniform_dist(e1);
+
+    if (current_pos.x < 0 || current_pos.y < 0 || current_pos.x > WINDOW_WIDTH || current_pos.y > WINDOW_HEIGHT) {
+      continue;
+    }
+
+    const auto index = current_pos.y * GRID_WIDTH + current_pos.x;
+
+    if (map_[index].type() == TileType::Road) {
+      current_pos = RandomPathUpdate(current_pos, rnd);
+      continue;
+    }
+
+    map_[index].SetType(TileType::Road);
+
+    current_pos = RandomPathUpdate(current_pos, rnd);
   }
+  SetAllTextures();
 }
 
-void Tilemap::SetTextures() {
-  sf::Texture roadTexture, grassTexture;
+sf::Vector2<int> &Tilemap::RandomPathUpdate(sf::Vector2<int> &current_pos, const int rnd) {
+  switch (rnd) {
+    case 1:current_pos.x++;
+      break;
+    case 2:current_pos.x--;
+      break;
+    case 3:current_pos.y++;
+      break;
+    case 4:current_pos.y--;
+      break;
+    default:break;
+  }
+  return current_pos;
+}
+
+void Tilemap::SetAllTextures() {
+  sf::Texture road_tex;
+  sf::Texture grass_tex;
 
   std::string_view road_path("data/Tiles/Asphalt road/road_asphalt01.png");
   std::string_view grass_path("data/Tiles/Grass/land_grass11.png");
 
-  if (roadTexture.loadFromFile(road_path)) {
-    std::cerr << "AHHHHHHH, texture not good (asphalt)\n";
+  if (!road_tex.loadFromFile(road_path)) {
+    std::cerr << "PROBLEMS FOR ROAD TEXT\n";
   }
-  if (grassTexture.loadFromFile(grass_path)) {
-    std::cerr << "AHHHHHHH, texture not good (grass)\n";
+  if (!grass_tex.loadFromFile(grass_path)) {
+    std::cerr << "PROBLEMS FOR GRASS TEXT\n";
   }
 
   for (auto &_ : map_) {
-    int x = _.Position().x;
-    int y = _.Position().y;
-
-    //check
-    if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT) {
-      std::cerr << "Tile position out of bounds: (" << x << ", " << y << ")" << std::endl;
-      continue;
-    }
-
-    if (isVisited(x, y)) {
-      _.Shape().setTexture(&roadTexture);
+    if (_.type() == TileType::Road) {
+      _.SetTextureTo(road_tex);
     } else {
-      _.Shape().setTexture(&grassTexture);
+      _.SetTextureTo(grass_tex);
     }
-
   }
 }
+
 }
