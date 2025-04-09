@@ -13,45 +13,24 @@
 #include "field.h"
 
 namespace client {
-void Events(float player_given_velocity,
-            float player_speed,
-            micromachine::car_game_manager::Manager &manager,
+void Events(micromachine::car_game_manager::Manager &manager,
             const std::optional<sf::Event> &event) {
   if (event->is<sf::Event::KeyPressed>()) {
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-      sf::Vector2<float> new_velocity_01 = sf::Vector2f(0.0f, -1 * (player_given_velocity * player_speed));
-      sf::Vector2<float> new_velocity_02 = sf::Vector2f(0.0f, (player_given_velocity * player_speed));
-
-      //player_one.MoveAt(new_velocity);
-      manager.AllPlayers()[0].MoveAt(new_velocity_01);
-      manager.AllPlayers()[1].MoveAt(new_velocity_02);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-      sf::Vector2<float> new_velocity_01 = sf::Vector2f(0.0f, player_given_velocity * player_speed);
-      sf::Vector2<float> new_velocity_02 = sf::Vector2f(0.0f, -1 * (player_given_velocity * player_speed));
-
-      //player_one.MoveAt(new_velocity);
-      manager.AllPlayers()[0].MoveAt(new_velocity_01);
-      manager.AllPlayers()[1].MoveAt(new_velocity_02);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-      sf::Vector2<float> new_velocity_01 = sf::Vector2f(-1 * player_given_velocity * player_speed, 0.0f);
-      sf::Vector2<float> new_velocity_02 = sf::Vector2f(player_given_velocity * player_speed, 0.0f);
-
-      //player_one.MoveAt(new_velocity);
-      manager.AllPlayers()[0].MoveAt(new_velocity_01);
-      manager.AllPlayers()[1].MoveAt(new_velocity_02);
-    } else if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-      sf::Vector2<float> new_velocity_01 = sf::Vector2f(player_given_velocity * player_speed, 0.0f);
-      sf::Vector2<float> new_velocity_02 = sf::Vector2f(-1 * (player_given_velocity * player_speed), 0.0f);
-
-      //player_one.MoveAt(new_velocity);
-      manager.AllPlayers()[0].MoveAt(new_velocity_01);
-      manager.AllPlayers()[1].MoveAt(new_velocity_02);
-    } else {
-      sf::Vector2<float> new_velocity_0 = sf::Vector2f (0.0f, 0.0f);
-
-      //player_one.MoveAt(new_velocity);
-      manager.AllPlayers()[0].MoveAt(new_velocity_0);
-      manager.AllPlayers()[1].MoveAt(new_velocity_0);
+      manager.AllPlayers()[0].Options().TurnAccelerationTo(true);
+      manager.AllPlayers()[0].Options().TurnBrakingTo(false);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
+      manager.AllPlayers()[0].Options().TurnTurningLeftTo(true);
+      manager.AllPlayers()[0].Options().TurnTurningRightTo(false);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
+      manager.AllPlayers()[0].Options().TurnTurningRightTo(true);
+      manager.AllPlayers()[0].Options().TurnTurningLeftTo(false);
+    }
+    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
+      manager.AllPlayers()[0].Options().TurnBrakingTo(true);
+      manager.AllPlayers()[0].Options().TurnAccelerationTo(false);
     }
   }
 }
@@ -65,7 +44,7 @@ int main() {
   static constexpr sf::Color player_one_color(200, 35, 50, 255);
   static constexpr sf::Color player_two_color(30, 30, 255, 255);
   static constexpr sf::Color player_outline_color(233, 233, 0, 255);
-  static constexpr float player_given_velocity = 30.0f;
+  static constexpr float player_given_velocity = 10.0f;
   static constexpr float player_speed = 5.0f;
 
   micromachine::field::Tilemap tilemap;
@@ -108,14 +87,14 @@ int main() {
   sf::Clock deltaClock;
   while (isOpen) {
 
-    auto delta = deltaClock.getElapsedTime().asMilliseconds();
+    auto delta = deltaClock.getElapsedTime().asSeconds();
 
     while (const auto event = render.Window().pollEvent()) {
       ImGui::SFML::ProcessEvent(render.Window(), *event);
       if (event->is<sf::Event::Closed>()) {
         isOpen = false;
       }
-      client::Events(player_given_velocity, player_speed, manager, event);
+      client::Events(manager, event);
     }
 
 
@@ -132,14 +111,14 @@ int main() {
     manager.AllTicks(static_cast<float>(delta));
 
     player_representation_01.setPosition(manager.AllPlayers()[0].Position());
+    //player_representation_01.rotate(sf::radians(manager.AllPlayers()[0].Options().angle));
     player_representation_02.setPosition(manager.AllPlayers()[1].Position());
 
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
     render.Draw(player_representation_01);
     render.Draw(player_representation_02);
-    for(auto& tile : tilemap.Map())
-    {
+    for (auto &tile : tilemap.Map()) {
       render.Draw(tile.Shape());
     }
     render.Display();
