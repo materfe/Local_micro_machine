@@ -1,10 +1,10 @@
 ﻿#include "car_game_manager.h"
 
 namespace micromachine::car_game_manager {
-void Manager::AllTicks(const float delta_time) {
+void Manager::TicksAll(const float delta_time) {
   for(auto& car : all_players_)
   {
-    car.Test(delta_time);
+    car.Tick(delta_time);
   }
 }
 

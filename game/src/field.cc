@@ -1,7 +1,7 @@
 ﻿#include <random>
 #include <iostream>
 
-#include "field.h"
+#include "tilemap.h"
 
 namespace micromachine::field {
 
@@ -26,7 +26,10 @@ void Tilemap::GenerateRandomMap() {
 
   auto current_pos = sf::Vector2i(GRID_WIDTH / 2, GRID_HEIGHT / 2);
 
-  for (int gen = 0; gen < GENERATION_NUMBER; gen++) {
+  auto gen_number = 0;
+
+  while (gen_number < GENERATION_NUMBER)
+  {
     //random setup
     const int rnd = uniform_dist(e1);
 
@@ -37,18 +40,18 @@ void Tilemap::GenerateRandomMap() {
     const auto index = current_pos.y * GRID_WIDTH + current_pos.x;
 
     if (map_[index].type() == TileType::Road) {
-      current_pos = RandomPathUpdate(current_pos, rnd);
+      current_pos = ChooseNeighbour(current_pos, rnd);
       continue;
     }
 
     map_[index].SetType(TileType::Road);
-
-    current_pos = RandomPathUpdate(current_pos, rnd);
+    gen_number++;
+    current_pos = ChooseNeighbour(current_pos, rnd);
   }
   SetAllTextures();
 }
 
-sf::Vector2<int> &Tilemap::RandomPathUpdate(sf::Vector2<int> &current_pos, const int rnd) {
+sf::Vector2<int> &Tilemap::ChooseNeighbour(sf::Vector2<int> &current_pos, const int rnd) {
   switch (rnd) {
     case 1:current_pos.x++;
       break;

@@ -2,8 +2,8 @@
 // Created by Mat on 4/2/2025.
 //
 
-#ifndef MICROMACHINE_GAME_INCLUDE_FIELD_H_
-#define MICROMACHINE_GAME_INCLUDE_FIELD_H_
+#ifndef MICROMACHINE_GAME_INCLUDE_TILEMAP_H_
+#define MICROMACHINE_GAME_INCLUDE_TILEMAP_H_
 #include <vector>
 #include "SFML/Graphics.hpp"
 #include "SFML/Graphics/Drawable.hpp."
@@ -53,7 +53,7 @@ class Tilemap {
   std::vector<Tile> map_{};
 
   void InitializeMap();
-  static sf::Vector2<int> &RandomPathUpdate(sf::Vector2<int> &current_pos, int rnd);
+  static sf::Vector2<int> &ChooseNeighbour(sf::Vector2<int> &current_pos, int rnd);
   void SetAllTextures();
 
  public:
@@ -68,4 +68,4 @@ class Tilemap {
 
 }
 
-#endif //MICROMACHINE_GAME_INCLUDE_FIELD_H_
+#endif //MICROMACHINE_GAME_INCLUDE_TILEMAP_H_

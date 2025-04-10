@@ -10,7 +10,7 @@
 #include "playlist.h"
 #include "car_game_manager.h"
 #include "rendering_system.h"
-#include "field.h"
+#include "tilemap.h"
 
 namespace client {
 void Events(micromachine::car_game_manager::Manager &manager,
@@ -50,12 +50,16 @@ int main() {
   micromachine::field::Tilemap tilemap;
   tilemap.GenerateRandomMap();
 
+  micromachine::GameState game_state{};
+
   //1.
   //manager ----------------------------------------------------------------------------------
   micromachine::car_game_manager::Manager manager(player_amount);
   //player one
   micromachine::player::Car player_one(player_one_position);
   micromachine::player::Car player_two(player_two_position);
+
+  micromachine::player::Cars player_three(game_state, {500.0f,300.0f}, 1.0f, 0.5f);
   manager.AddPlayer(player_one);
   manager.AddPlayer(player_two);
 
@@ -108,16 +112,18 @@ int main() {
     ImGui::SFML::Render(render.Window());
 
     //Ticks --------------------------------------------------------------------------------------------------------
-    manager.AllTicks(static_cast<float>(delta));
+    manager.TicksAll(static_cast<float>(delta));
 
     player_representation_01.setPosition(manager.AllPlayers()[0].Position());
     //player_representation_01.rotate(sf::radians(manager.AllPlayers()[0].Options().angle));
     player_representation_02.setPosition(manager.AllPlayers()[1].Position());
+    game_state.Update(delta);
 
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
     render.Draw(player_representation_01);
     render.Draw(player_representation_02);
+    render.Draw(player_three.Shape());
     for (auto &tile : tilemap.Map()) {
       render.Draw(tile.Shape());
     }

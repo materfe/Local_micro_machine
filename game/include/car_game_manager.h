@@ -23,7 +23,7 @@ class Manager final {
 
   std::vector<player::Car>& AllPlayers(){return all_players_;}
 
-  void AllTicks(float delta_time);
+  void TicksAll(float delta_time);
   void AddPlayer(const player::Car& player);
 };
 

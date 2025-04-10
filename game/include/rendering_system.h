@@ -12,6 +12,7 @@ namespace micromachine::rendering
 class Renderer
 {
  private:
+  //TODO rendering.cc
   sf::RenderWindow window_;
 
  public:
