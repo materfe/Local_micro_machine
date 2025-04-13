@@ -50,6 +50,7 @@ class GameState {
     world_.Update(delta_time);
   }
 
+  crackitos_physics::physics::PhysicsWorld& World(){return world_;}
 };
 }
 

@@ -13,23 +13,29 @@ namespace micromachine::player {
 
 class Cars {
  private:
+  crackitos_physics::physics::PhysicsWorld& world_;
   crackitos_physics::physics::BodyHandle body_{};
   sf::RectangleShape shape_{};
   crackitos_physics::physics::ColliderHandle collider_{};
+
+  void ShapeUpdate()
+  {
+    shape_.setPosition({world_.GetMutableBody(body_).position().x, world_.GetMutableBody(body_).position().y});
+  }
 
  public:
 
   Cars(GameState &game_state,
        const crackitos_core::math::Vec2f &pos,
        const crackitos_core::commons::fp mass,
-       const crackitos_core::commons::fp bounciness) {
+       const crackitos_core::commons::fp bounciness) : world_(game_state.World()){
     Init(game_state, pos, mass, bounciness);
   }
 
   void Init(GameState &game_state,
             const crackitos_core::math::Vec2f &pos,
             const crackitos_core::commons::fp mass,
-            const crackitos_core::commons::fp bounciness) {
+            const crackitos_core::commons::fp bounciness){
 
     const auto type = crackitos_physics::physics::BodyType::Dynamic;
     body_ = game_state.CreateBody(type, pos, mass);
@@ -43,6 +49,21 @@ class Cars {
     shape_.setPosition({car_bounds.GetCentre().x, car_bounds.GetCentre().y});
     shape_.setSize(shape_size);
     shape_.setFillColor(sf::Color::Magenta);
+  }
+
+  void Update(float dt)
+  {
+    crackitos_physics::physics::Body& body = world_.GetMutableBody(body_);
+
+    body.Update(dt);
+    ShapeUpdate();
+  }
+
+  void Move(crackitos_core::math::Vec2f direction)
+  {
+    const crackitos_core::commons::fp speed = 5.0f;
+    crackitos_physics::physics::Body& body = world_.GetMutableBody(body_);
+    body.ApplyForce(crackitos_core::math::Vec2f((direction * speed).x, (direction * speed).y));
   }
 
   sf::RectangleShape& Shape(){return shape_;}

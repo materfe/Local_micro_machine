@@ -12,6 +12,7 @@
 #include "rendering_system.h"
 #include "tilemap.h"
 
+
 namespace client {
 void Events(micromachine::car_game_manager::Manager &manager,
             const std::optional<sf::Event> &event) {
@@ -33,6 +34,15 @@ void Events(micromachine::car_game_manager::Manager &manager,
       manager.AllPlayers()[0].Options().TurnAccelerationTo(false);
     }
   }
+}
+
+crackitos_core::math::Vec2f UpdateDirection() {
+  crackitos_core::math::Vec2f direction(0, 0);
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) direction.y = -1.f;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.y = 1.f;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) direction.x = -1.f;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) direction.x = 1.f;
+  return direction;
 }
 }
 
@@ -91,7 +101,9 @@ int main() {
   sf::Clock deltaClock;
   while (isOpen) {
 
-    auto delta = deltaClock.getElapsedTime().asSeconds();
+    const auto delta = deltaClock.getElapsedTime().asSeconds();
+
+    game_state.Update(delta);
 
     while (const auto event = render.Window().pollEvent()) {
       ImGui::SFML::ProcessEvent(render.Window(), *event);
@@ -100,6 +112,8 @@ int main() {
       }
       client::Events(manager, event);
     }
+
+    const auto direction = client::UpdateDirection();
 
 
     //IMGUI --------------------------------------------------------------------------------------------------------
@@ -119,6 +133,9 @@ int main() {
     player_representation_02.setPosition(manager.AllPlayers()[1].Position());
     game_state.Update(delta);
 
+    player_three.Move(direction);
+    player_three.Update(delta);
+
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
     render.Draw(player_representation_01);
@@ -133,3 +150,4 @@ int main() {
   ImGui::SFML::Shutdown();
   return 0;
 }
+
