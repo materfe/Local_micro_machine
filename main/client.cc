@@ -2,7 +2,6 @@
 #include <imgui-SFML.h>
 #include <imgui.h>
 #include <misc/cpp/imgui_stdlib.h>
-#include <SFML/Graphics.hpp>
 
 #include <iostream>
 
@@ -14,28 +13,6 @@
 
 
 namespace client {
-void Events(micromachine::car_game_manager::Manager &manager,
-            const std::optional<sf::Event> &event) {
-  if (event->is<sf::Event::KeyPressed>()) {
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) {
-      manager.AllPlayers()[0].Options().TurnAccelerationTo(true);
-      manager.AllPlayers()[0].Options().TurnBrakingTo(false);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) {
-      manager.AllPlayers()[0].Options().TurnTurningLeftTo(true);
-      manager.AllPlayers()[0].Options().TurnTurningRightTo(false);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) {
-      manager.AllPlayers()[0].Options().TurnTurningRightTo(true);
-      manager.AllPlayers()[0].Options().TurnTurningLeftTo(false);
-    }
-    if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) {
-      manager.AllPlayers()[0].Options().TurnBrakingTo(true);
-      manager.AllPlayers()[0].Options().TurnAccelerationTo(false);
-    }
-  }
-}
-
 crackitos_core::math::Vec2f UpdateDirection() {
   crackitos_core::math::Vec2f direction(0, 0);
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) direction.y = -1.f;
@@ -57,33 +34,19 @@ int main() {
   static constexpr float player_given_velocity = 10.0f;
   static constexpr float player_speed = 5.0f;
 
-  micromachine::field::Tilemap tilemap;
+  micromachine::tilemap::Tilemap tilemap;
+  micromachine::tilemap::Tilemap map;
   tilemap.GenerateRandomMap();
+  map = tilemap;
+  map.SetAllTileSizeTo(35.0f);
 
   micromachine::GameState game_state{};
 
   //1.
   //manager ----------------------------------------------------------------------------------
   micromachine::car_game_manager::Manager manager(player_amount);
-  //player one
-  micromachine::player::Car player_one(player_one_position);
-  micromachine::player::Car player_two(player_two_position);
 
   micromachine::player::Cars player_three(game_state, {500.0f,300.0f}, 1.0f, 0.5f);
-  manager.AddPlayer(player_one);
-  manager.AddPlayer(player_two);
-
-  //2.
-  //set shapes --------------------------------------------------------------------------------
-  auto player_representation_01 = sf::CircleShape(player_radius, 3);
-  player_representation_01.setFillColor(player_one_color);
-  player_representation_01.setOutlineColor(player_outline_color);
-  player_representation_01.setOutlineThickness(-2.0f);
-
-  auto player_representation_02 = sf::CircleShape(player_radius, 3);
-  player_representation_02.setFillColor(player_two_color);
-  player_representation_02.setOutlineColor(player_outline_color);
-  player_representation_02.setOutlineThickness(-2.0f);
 
   //3.
   //set renderer ------------------------------------------------------------------------------
@@ -103,14 +66,11 @@ int main() {
 
     const auto delta = deltaClock.getElapsedTime().asSeconds();
 
-    game_state.Update(delta);
-
     while (const auto event = render.Window().pollEvent()) {
       ImGui::SFML::ProcessEvent(render.Window(), *event);
       if (event->is<sf::Event::Closed>()) {
         isOpen = false;
       }
-      client::Events(manager, event);
     }
 
     const auto direction = client::UpdateDirection();
@@ -126,11 +86,6 @@ int main() {
     ImGui::SFML::Render(render.Window());
 
     //Ticks --------------------------------------------------------------------------------------------------------
-    manager.TicksAll(static_cast<float>(delta));
-
-    player_representation_01.setPosition(manager.AllPlayers()[0].Position());
-    //player_representation_01.rotate(sf::radians(manager.AllPlayers()[0].Options().angle));
-    player_representation_02.setPosition(manager.AllPlayers()[1].Position());
     game_state.Update(delta);
 
     player_three.Move(direction);
@@ -138,9 +93,10 @@ int main() {
 
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
-    render.Draw(player_representation_01);
-    render.Draw(player_representation_02);
     render.Draw(player_three.Shape());
+    for (auto &tile : map.Map()) {
+      render.Draw(tile.Shape());
+    }
     for (auto &tile : tilemap.Map()) {
       render.Draw(tile.Shape());
     }
