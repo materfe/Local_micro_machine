@@ -11,7 +11,7 @@
 
 namespace micromachine::player {
 
-class Cars {
+class Car {
  private:
   crackitos_physics::physics::PhysicsWorld& world_;
   crackitos_physics::physics::BodyHandle body_{};
@@ -26,11 +26,11 @@ class Cars {
 
  public:
 
-  Cars(GameState &game_state,
-       const crackitos_core::math::Vec2f &pos,
-       const crackitos_core::commons::fp mass,
-       const crackitos_core::commons::fp bounciness,
-       const float speed = 40.0f) : world_(game_state.World()), speed_(speed){
+  Car(GameState &game_state,
+      const crackitos_core::math::Vec2f &pos,
+      const crackitos_core::commons::fp mass,
+      const crackitos_core::commons::fp bounciness,
+      const float speed = 40.0f) : world_(game_state.World()), speed_(speed){
     Init(game_state, pos, mass, bounciness);
   }
 

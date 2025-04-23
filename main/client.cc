@@ -10,6 +10,7 @@
 #include "car_game_manager.h"
 #include "rendering_system.h"
 #include "tilemap.h"
+#include "camera.h"
 
 
 namespace client {
@@ -24,7 +25,7 @@ crackitos_core::math::Vec2f UpdateDirection() {
 }
 
 int main() {
-  static constexpr std::int8_t player_amount = 10;
+  static constexpr std::int8_t player_amount = 1;
   static constexpr sf::Vector2f player_one_position(400.0f, 350.0f);
   static constexpr sf::Vector2f player_two_position(800.0f, 350.0f);
   static constexpr float player_radius = 25.0f;
@@ -39,20 +40,22 @@ int main() {
   tilemap.GenerateRandomMap();
   map = tilemap;
   map.SetAllTileSizeTo(35.0f);
-
   micromachine::GameState game_state{};
+  micromachine::View::Camera cam{};
 
   //1.
   //manager ----------------------------------------------------------------------------------
   micromachine::car_game_manager::Manager manager(player_amount);
 
-  micromachine::player::Cars player_three(game_state, {500.0f,300.0f}, 1.0f, 0.5f);
+  micromachine::player::Car player_three(game_state, {500.0f, 300.0f}, 1.0f, 0.5f);
+  manager.AddPlayer(player_three);
 
   //3.
   //set renderer ------------------------------------------------------------------------------
   auto render = micromachine::rendering::Renderer(WINDOW_WIDTH, WINDOW_HEIGHT, "MicroMachine");
   render.FrameRateLimit(60);
   render.VerticalSyncEnable(true);
+  render.Window().setView(cam.view());
   if (!ImGui::SFML::Init(render.Window())) {
     std::cerr << "imgui error";
     return EXIT_FAILURE;
@@ -88,18 +91,20 @@ int main() {
     //Ticks --------------------------------------------------------------------------------------------------------
     game_state.Update(delta);
 
+    cam.Update(manager);
+    render.Window().setView(cam.view());
     player_three.Move(direction);
-    player_three.Update(delta);
+    manager.TicksAll(delta);
 
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
-    render.Draw(player_three.Shape());
     for (auto &tile : map.Map()) {
       render.Draw(tile.Shape());
     }
     for (auto &tile : tilemap.Map()) {
       render.Draw(tile.Shape());
     }
+    render.Draw(manager.AllPlayers()[0].Shape());
     render.Display();
   }
 

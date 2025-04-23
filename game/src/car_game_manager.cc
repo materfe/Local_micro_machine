@@ -8,7 +8,7 @@ void Manager::TicksAll(const float delta_time) {
   }
 }
 
-void Manager::AddPlayer(const player::Cars& player) {
+void Manager::AddPlayer(const player::Car& player) {
   all_players_.push_back(player);
 }
 }
