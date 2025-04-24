@@ -25,7 +25,7 @@ crackitos_core::math::Vec2f UpdateDirection() {
 }
 
 int main() {
-  static constexpr std::int8_t player_amount = 1;
+  static constexpr std::int8_t player_amount = 3;
   static constexpr sf::Vector2f player_one_position(400.0f, 350.0f);
   static constexpr sf::Vector2f player_two_position(800.0f, 350.0f);
   static constexpr float player_radius = 25.0f;
@@ -47,8 +47,14 @@ int main() {
   //manager ----------------------------------------------------------------------------------
   micromachine::car_game_manager::Manager manager(player_amount);
 
-  micromachine::player::Car player_three(game_state, {500.0f, 300.0f}, 1.0f, 0.5f);
+  micromachine::player::Car player_three(game_state, {500.0f, 300.0f}, 1.0f, 1.0f);
+  micromachine::player::Car player_four(game_state, {400.0f, 300.0f}, 1.0f, 0.5f);
+  player_four.SetColor(sf::Color::White);
+  micromachine::player::Car player_fifth(game_state, {300.0f, 300.0f}, 1.0f, 110.5f);
+  player_fifth.SetColor(sf::Color::Red);
   manager.AddPlayer(player_three);
+  manager.AddPlayer(player_four);
+  manager.AddPlayer(player_fifth);
 
   //3.
   //set renderer ------------------------------------------------------------------------------
@@ -96,6 +102,15 @@ int main() {
     player_three.Move(direction);
     manager.TicksAll(delta);
 
+    for(auto& car : manager.AllPlayers())
+    {
+      if(!cam.IsInPlayableBounds(*car))
+      {
+        std::cout << "nioooo, dead \n";
+        manager.RemovePlayer(*car);
+      }
+    }
+
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
     for (auto &tile : map.Map()) {
@@ -104,7 +119,9 @@ int main() {
     for (auto &tile : tilemap.Map()) {
       render.Draw(tile.Shape());
     }
-    render.Draw(manager.AllPlayers()[0].Shape());
+    render.Draw(manager.AllPlayers()[0]->Shape());
+    render.Draw(manager.AllPlayers()[1]->Shape());
+    render.Draw(manager.AllPlayers()[2]->Shape());
     render.Display();
   }
 

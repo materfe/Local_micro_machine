@@ -25,7 +25,6 @@ class Car {
   }
 
  public:
-
   Car(GameState &game_state,
       const crackitos_core::math::Vec2f &pos,
       const crackitos_core::commons::fp mass,
@@ -54,7 +53,12 @@ class Car {
     shape_.setSize(shape_size);
     shape_.setFillColor(sf::Color::Magenta);
 
-    SetCarDamping(0.99f);
+    SetCarDamping(0.9999f);
+  }
+
+  bool operator==(const Car& car)
+  {
+    return this->body_ == car.body_ and this->collider_== car.collider_;
   }
 
   void Update(float dt)
@@ -75,6 +79,11 @@ class Car {
   {
     crackitos_physics::physics::Body& body = world_.GetMutableBody(body_);
     body.damping_factor(factor);
+  }
+
+  void SetColor(const sf::Color color)
+  {
+    shape_.setFillColor(color);
   }
 
   sf::RectangleShape& Shape(){return shape_;}
