@@ -44,8 +44,8 @@ class Camera
 
     for(auto& car : manager.AllPlayers())
     {
-      const auto x = car->Shape().getPosition().x;
-      const auto y = car->Shape().getPosition().y;
+      const auto x = car.Shape().getPosition().x;
+      const auto y = car.Shape().getPosition().y;
       if(y < position.y)
       {
         position = sf::Vector2f(x, y);

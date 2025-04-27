@@ -13,19 +13,22 @@ namespace micromachine::car_game_manager {
 class Manager final {
  private:
   int amount_of_players_ = 0;
-  std::vector<std::unique_ptr<player::Car>> all_players_{};
+  std::vector<player::Car> all_players_{};
+  std::vector<player::Car> all_dead_players_{};
 
  public:
   explicit Manager(std::int32_t amount_of_players = 0) : amount_of_players_(amount_of_players) {
     all_players_.reserve(amount_of_players_);
+    all_dead_players_.reserve(amount_of_players_);
   }
 
 
-  std::vector<std::unique_ptr<player::Car>>& AllPlayers(){return all_players_;}
+  std::vector<player::Car>& AllPlayers(){return all_players_;}
+  std::vector<player::Car>& AllDeadPlayers(){return all_dead_players_;}
 
   void TicksAll(float delta_time);
   void AddPlayer(const player::Car& player);
-  void RemovePlayer(player::Car& car);
+  void KillPlayer(player::Car& car);
 };
 
 }

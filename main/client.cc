@@ -12,7 +12,6 @@
 #include "tilemap.h"
 #include "camera.h"
 
-
 namespace client {
 crackitos_core::math::Vec2f UpdateDirection() {
   crackitos_core::math::Vec2f direction(0, 0);
@@ -102,12 +101,10 @@ int main() {
     player_three.Move(direction);
     manager.TicksAll(delta);
 
-    for(auto& car : manager.AllPlayers())
-    {
-      if(!cam.IsInPlayableBounds(*car))
-      {
+    for (auto &car : manager.AllPlayers()) {
+      if (!cam.IsInPlayableBounds(car)) {
         std::cout << "nioooo, dead \n";
-        manager.RemovePlayer(*car);
+        manager.KillPlayer(car);
       }
     }
 
@@ -119,9 +116,12 @@ int main() {
     for (auto &tile : tilemap.Map()) {
       render.Draw(tile.Shape());
     }
-    render.Draw(manager.AllPlayers()[0]->Shape());
-    render.Draw(manager.AllPlayers()[1]->Shape());
-    render.Draw(manager.AllPlayers()[2]->Shape());
+    for (auto &car : manager.AllPlayers()) {
+      render.Draw(car.Shape());
+    }
+    for (auto &car : manager.AllDeadPlayers()) {
+      render.Draw(car.Shape());
+    }
     render.Display();
   }
 
