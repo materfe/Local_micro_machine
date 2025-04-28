@@ -38,7 +38,7 @@ int main() {
   micromachine::tilemap::Tilemap map;
   tilemap.GenerateRandomMap();
   map = tilemap;
-  map.SetAllTileSizeTo(35.0f);
+  map.SetAllTileSizeTo(75.0f);
   micromachine::GameState game_state{};
   micromachine::View::Camera cam{};
 
@@ -96,14 +96,18 @@ int main() {
     //Ticks --------------------------------------------------------------------------------------------------------
     game_state.Update(delta);
 
+
     cam.Update(manager);
+
     render.Window().setView(cam.view());
-    player_three.Move(direction);
+
     manager.TicksAll(delta);
 
+    player_three.Move(direction);
+
+    //manage dying cars
     for (auto &car : manager.AllPlayers()) {
       if (!cam.IsInPlayableBounds(car)) {
-        std::cout << "nioooo, dead \n";
         manager.KillPlayer(car);
       }
     }

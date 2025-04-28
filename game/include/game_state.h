@@ -14,9 +14,9 @@ class GameState {
   crackitos_physics::physics::PhysicsWorld world_{};
 
  public:
-  GameState() {
-    const auto min_bounds = crackitos_core::math::Vec2f(0.0f, 0.0f);
-    const auto max_bounds = crackitos_core::math::Vec2f(WINDOW_WIDTH, WINDOW_HEIGHT);
+  GameState(){
+    const auto min_bounds = crackitos_core::math::Vec2f(WINDOW_WIDTH * -20.0f, WINDOW_HEIGHT * -20.0f);
+    const auto max_bounds = crackitos_core::math::Vec2f(WINDOW_WIDTH * 20.0f, WINDOW_HEIGHT * 20.0f);
     const auto screen_bounds = crackitos_core::math::AABB(min_bounds, max_bounds);
     const auto out_of_bounce_removal = true;
     const auto gravity_value = crackitos_core::math::Vec2f(0.0f, 0.0f);
