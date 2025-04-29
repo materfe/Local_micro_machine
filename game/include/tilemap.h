@@ -10,6 +10,7 @@
 
 #include "const.h"
 #include "commons.h"
+#include "vec2.h"
 
 namespace micromachine::tilemap {
 static constexpr std::int8_t GRID_WIDTH = 20;
@@ -45,6 +46,7 @@ class Tile {
 
   void SetType(TileType type) { type_ = type; }
   TileType type() { return type_; }
+  crackitos_core::commons::fp &Size() { return size_; }
   sf::RectangleShape &Shape() { return shape_; }
   void SetTextureTo(sf::Texture &texture) {
     tex_ = texture;
@@ -83,7 +85,7 @@ class Tilemap {
       return;
     }
 
-    std::array<Tile, GRID_WIDTH*GRID_HEIGHT> temp{};
+    std::array<Tile, GRID_WIDTH * GRID_HEIGHT> temp{};
 
     for (std::size_t x = 0; x < map_.size(); x++) {
       map_[x].SetSizeTo(size);
@@ -93,21 +95,20 @@ class Tilemap {
 
     //resize and replace each element
     const auto usable_size = size;
-    for(int x = 0; x < GRID_WIDTH; x++)
-    {
+    for (int x = 0; x < GRID_WIDTH; x++) {
       const auto X = static_cast<float>(x);
-      for(int y = 0; y < GRID_HEIGHT; y++)
-      {
+      for (int y = 0; y < GRID_HEIGHT; y++) {
         const auto Y = static_cast<float>(y);
         const auto index = x * GRID_WIDTH + y;
         auto replaced_tile = temp[index];
-        replaced_tile.Shape().setPosition({X*usable_size, Y*usable_size});
+        replaced_tile.Shape().setPosition({X * usable_size, Y * usable_size});
 
         map_[index] = replaced_tile;
       }
     }
   }
 
+  crackitos_core::math::Vec2f StartingPosition();
   std::vector<Tile> &Map() { return map_; }
 };
 

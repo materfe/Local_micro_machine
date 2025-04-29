@@ -17,4 +17,13 @@ void Manager::KillPlayer(player::Car &car) {
   all_dead_players_.push_back(car);
 }
 
+void Manager::SetAllPositions(const crackitos_core::math::Vec2f &start_pos) {
+  auto offset = 0.0f;
+
+  for (auto &car : all_players_) {
+    const crackitos_core::math::Vec2f pos(start_pos.x + offset, start_pos.y);
+    car.SetStartPos(pos);
+    offset += car.Shape().getSize().x;
+  }
+}
 }

@@ -54,6 +54,7 @@ int main() {
   manager.AddPlayer(player_three);
   manager.AddPlayer(player_four);
   manager.AddPlayer(player_fifth);
+  manager.SetAllPositions(map.StartingPosition());
 
   //3.
   //set renderer ------------------------------------------------------------------------------

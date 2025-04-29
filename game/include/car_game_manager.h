@@ -29,6 +29,7 @@ class Manager final {
   void TicksAll(float delta_time);
   void AddPlayer(const player::Car& player);
   void KillPlayer(player::Car& car);
+  void SetAllPositions(const crackitos_core::math::Vec2f& start_pos);
 };
 
 }

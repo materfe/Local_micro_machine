@@ -84,6 +84,13 @@ class Car {
     shape_.setFillColor(color);
   }
 
+  void SetStartPos(const crackitos_core::math::Vec2f& start_pos)
+  {
+    crackitos_physics::physics::Body &body = world_.GetMutableBody(body_);
+    body.set_position(start_pos);
+    ShapeUpdate();
+  }
+
   void Kill() { is_alive = false; }
 
   sf::RectangleShape &Shape() { return shape_; }

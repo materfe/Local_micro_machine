@@ -139,4 +139,16 @@ void Tilemap::SetAllTextures() {
     }
   }
 }
+
+crackitos_core::math::Vec2f Tilemap::StartingPosition() {
+  crackitos_core::math::Vec2f return_pos{};
+  for (auto &tile : map_) {
+    if (tile.type() != TileType::StartRoad) {
+      continue;
+    }
+
+    return_pos = {tile.Shape().getPosition().x, tile.Shape().getPosition().y};
+  }
+  return return_pos;
+}
 }
