@@ -44,6 +44,10 @@ class Camera
 
     for(auto& car : manager.AllPlayers())
     {
+      if(!car.IsAlive())
+      {
+        continue;
+      }
       const auto x = car.Shape().getPosition().x;
       const auto y = car.Shape().getPosition().y;
       if(y < position.y)
@@ -57,6 +61,10 @@ class Camera
 
   bool IsInPlayableBounds(player::Car& car)
   {
+    if(!car.IsAlive())
+    {
+      return false;
+    }
     const auto half_width = car.Shape().getSize().x / 2;
     const auto half_height = car.Shape().getSize().y / 2;
 
@@ -64,7 +72,9 @@ class Camera
                                                      car.Shape().getPosition().y - half_height},
                                                      {car.Shape().getPosition().x + half_width,
                                                       car.Shape().getPosition().y + half_height});
-    return Intersect(bounds_, car_aabb);
+    const auto theoretical_result = Intersect(bounds_, car_aabb);
+
+    return theoretical_result;
   }
 
   sf::View& view(){return view_;}
