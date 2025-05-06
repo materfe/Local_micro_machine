@@ -8,6 +8,7 @@
 #include "client_interface.h"
 #include "LoadBalancing-cpp/inc/Listener.h"
 #include "LoadBalancing-cpp/inc/ClientConstructOptions.h"
+#include "LoadBalancing-cpp/inc/Client.h"
 #include <memory>
 #include <iostream>
 
@@ -16,16 +17,16 @@ namespace micromachine {
 class NetworkManager {
  public:
   //Démarre le client Photon avec l’interface utilisateur et les options de construction.
-  void Begin(ClientInterface *client, const ExitGames::LoadBalancing::ClientConstructOptions &clientConstructOptions);
+  static void Begin(ClientInterface *client, const ExitGames::LoadBalancing::ClientConstructOptions &clientConstructOptions);
 
   //Fait avancer le client Photon (doit être appelé régulièrement dans la boucle principale).
-  void Tick();
+  static void Tick();
 
   //Déconnecte proprement le client Photon.
-  void End();
+  static void End();
 
   //Permet d'accéder au client Photon actif.
-  ExitGames::LoadBalancing::Client &GetLoadBalancingClient();
+  static ExitGames::LoadBalancing::Client &GetLoadBalancingClient();
 };
 }
 

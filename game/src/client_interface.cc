@@ -3,6 +3,7 @@
 //
 
 #include "client_interface.h"
+#include "network.h"
 
 namespace micromachine
 {
@@ -23,13 +24,25 @@ void ClientInterface::disconnectReturn()
 
 void ClientInterface::customEventAction(int playerNr, nByte eventCode, const ExitGames::Common::Object& eventContent)
 {
-  std::cout << "Received custom event. Player: " << playerNr << ", Event Code: " << static_cast<int>(eventCode) << "\n";
-  // Vous pouvez parser eventContent ici
+  if(eventCode == 1)
+  {
+    auto msg = ExitGames::Common::ValueObject<ExitGames::Common::JString>(eventContent).getDataCopy();
+    std::cout << "Message from player " << playerNr << ": " << msg.UTF8Representation().cstr() << "\n";
+  }
 }
 
 void ClientInterface::operationReturn(const ExitGames::Photon::OperationResponse& operationResponse)
 {
   std::cout << "Operation returned. Code: " << operationResponse.getOperationCode() << ", Return Code: " << operationResponse.getReturnCode() << "\n";
 }
+
+bool SendMessageToRoom(const ExitGames::Common::JString& msg)
+{
+  ExitGames::Common::Hashtable data;
+  data.put((nByte)1, msg); // clé = 1, valeur = ton message
+
+  return micromachine::NetworkManager::GetLoadBalancingClient().opRaiseEvent(false, data, 1); // 1 = eventCode arbitraire
+}
+
 
 }

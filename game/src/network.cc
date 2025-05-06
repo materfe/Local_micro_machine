@@ -5,10 +5,9 @@
 
 #include "network.h"
 #include "LoadBalancing-cpp/inc/ConnectOptions.h"
-#include "LoadBalancing-cpp/inc/Client.h"
 
 namespace micromachine {
-static const ExitGames::Common::JString appID = L"xxxxxxxxxxxxxxxxxxxxxxx"; // set your app id here
+static const ExitGames::Common::JString appID = L"4d62da01-f896-4dbc-9f39-3a722de05d1e"; // set your app id here
 static const ExitGames::Common::JString appVersion = L"1.0";
 
 static std::unique_ptr<ExitGames::LoadBalancing::Client> loadBalancingClient_;
@@ -33,7 +32,8 @@ void NetworkManager::Tick() {
 void NetworkManager::End() {
   loadBalancingClient_->disconnect();
 }
-ExitGames::LoadBalancing::Client &GetLoadBalancingClient() {
+
+ExitGames::LoadBalancing::Client &NetworkManager::GetLoadBalancingClient() {
   return *loadBalancingClient_;
 }
 }
