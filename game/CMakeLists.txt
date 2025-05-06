@@ -51,6 +51,8 @@ endforeach()
 add_custom_target(copy_data ALL DEPENDS ${Data_OUTPUT_FILES})
 add_dependencies(api copy_data)
 
+#target_link_libraries(api PUBLIC)
+
 if(MSVC)
     target_compile_options(api PRIVATE "/W3" "/WX" "/permissive-")
 endif ()

@@ -21,7 +21,17 @@ enum class TileType {
   Grass,
   Road,
   StartRoad,
-  EndRoad
+  EndRoad,
+  HorizontalRoad,
+  VerticalRoad,
+  UpLeft,
+  UpRight,
+  DownLeft,
+  DownRight,
+  LeftUp,
+  RightDown,
+  RightUp,
+  LeftDown
 };
 
 class Tile {
@@ -64,9 +74,10 @@ class Tilemap {
   std::vector<Tile> road_{};
 
   void InitializeMap();
-  static sf::Vector2<int> &ChooseNeighbour(sf::Vector2<int> &current_pos, int rnd);
   void SetAllTextures();
   void SetStartAndEnd();
+  [[nodiscard]] bool IsRoad(int x, int y);
+  void ApplyTileRules();
 
  public:
   Tilemap() {

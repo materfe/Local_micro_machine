@@ -21,6 +21,14 @@ crackitos_core::math::Vec2f UpdateDirection() {
   if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) direction.x = 1.f;
   return direction;
 }
+crackitos_core::math::Vec2f UpdateDirection2() {
+  crackitos_core::math::Vec2f direction(0, 0);
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Up)) direction.y = -1.f;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Down)) direction.y = 1.f;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Left)) direction.x = -1.f;
+  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Right)) direction.x = 1.f;
+  return direction;
+}
 }
 
 int main() {
@@ -46,10 +54,10 @@ int main() {
   //manager ----------------------------------------------------------------------------------
   micromachine::car_game_manager::Manager manager(player_amount);
 
-  micromachine::player::Car player_three(game_state, {500.0f, 300.0f}, 1.0f, 1.0f);
-  micromachine::player::Car player_four(game_state, {400.0f, 300.0f}, 1.0f, 0.5f);
+  micromachine::player::Car player_three(game_state, {500.0f, 300.0f}, 1.0f, 1.0f, 100.0f);
+  micromachine::player::Car player_four(game_state, {400.0f, 300.0f}, 1.0f, 1.0f, 100.0f);
   player_four.SetColor(sf::Color::White);
-  micromachine::player::Car player_fifth(game_state, {300.0f, 300.0f}, 1.0f, 110.5f);
+  micromachine::player::Car player_fifth(game_state, {300.0f, 300.0f}, 1.0f, 1.0f);
   player_fifth.SetColor(sf::Color::Red);
   manager.AddPlayer(player_three);
   manager.AddPlayer(player_four);
@@ -83,6 +91,7 @@ int main() {
     }
 
     const auto direction = client::UpdateDirection();
+    const auto direction_2 = client::UpdateDirection2();
 
 
     //IMGUI --------------------------------------------------------------------------------------------------------
@@ -105,6 +114,7 @@ int main() {
     manager.TicksAll(delta);
 
     player_three.Move(direction);
+    player_four.Move(direction_2);
 
     //manage dying cars
     for (auto &car : manager.AllPlayers()) {
@@ -133,4 +143,3 @@ int main() {
   ImGui::SFML::Shutdown();
   return 0;
 }
-
