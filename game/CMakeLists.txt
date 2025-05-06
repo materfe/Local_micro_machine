@@ -5,11 +5,6 @@ file(GLOB_RECURSE HEADER_FILES ${CMAKE_CURRENT_SOURCE_DIR}/include/*.h)
 
 
 add_library(api STATIC ${SRC_FILES} ${HEADER_FILES})
-target_include_directories(api PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include/)
-
-target_link_libraries(api PRIVATE sfml-graphics sfml-window sfml-system)  # Link SFML to `api`
-
-target_link_libraries(api PUBLIC crackitos_physics)
 
 file(GLOB_RECURSE DATA_FILES
         "data/*.json"
@@ -51,7 +46,39 @@ endforeach()
 add_custom_target(copy_data ALL DEPENDS ${Data_OUTPUT_FILES})
 add_dependencies(api copy_data)
 
-#target_link_libraries(api PUBLIC)
+# Photon include and libs passed from parent
+set(PHOTON_INCLUDE_DIR
+        ${CMAKE_SOURCE_DIR}/externals/photon
+        ${CMAKE_SOURCE_DIR}/externals/photon/Common-cpp
+        ${CMAKE_SOURCE_DIR}/externals/photon/LoadBalancing-cpp
+        ${CMAKE_SOURCE_DIR}/externals/photon/Photon-cpp
+)
+
+set(PHOTON_LIB_DIR ${CMAKE_SOURCE_DIR}/externals/photon/windows)
+
+set(PHOTON_LIBS
+        debug ${PHOTON_LIB_DIR}/Common-cpp_vc17_debug_windows_md_x64.lib
+        debug ${PHOTON_LIB_DIR}/LoadBalancing-cpp_vc17_debug_windows_md_x64.lib
+        debug ${PHOTON_LIB_DIR}/Photon-cpp_vc17_debug_windows_md_x64.lib
+        optimized ${PHOTON_LIB_DIR}/Common-cpp_vc17_release_windows_md_x64.lib
+        optimized ${PHOTON_LIB_DIR}/LoadBalancing-cpp_vc17_release_windows_md_x64.lib
+        optimized ${PHOTON_LIB_DIR}/Photon-cpp_vc17_release_windows_md_x64.lib
+)
+
+# Ajout des includes de Photon
+target_include_directories(api
+        PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${PHOTON_INCLUDE_DIR}
+)
+
+# Lien avec Photon
+target_link_libraries(api
+        PRIVATE sfml-graphics sfml-window sfml-system
+        PRIVATE ${PHOTON_LIBS}
+        PUBLIC crackitos_physics
+)
+
 
 if(MSVC)
     target_compile_options(api PRIVATE "/W3" "/WX" "/permissive-")
