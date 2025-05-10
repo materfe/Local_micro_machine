@@ -46,7 +46,7 @@ int main() {
   micromachine::tilemap::Tilemap map;
   tilemap.GenerateRandomMap();
   map = tilemap;
-  map.SetAllTileSizeTo(75.0f);
+  map.SetAllTileSizeTo(150.0f);
   micromachine::GameState game_state{};
   micromachine::View::Camera cam{};
 

@@ -69,7 +69,9 @@ bool Tilemap::IsRoad(const int x, const int y) {
       || map_[index].type() == TileType::VerticalRoad
       || map_[index].type() == TileType::LeftUp
       || map_[index].type() == TileType::DownRight
-      || map_[index].type() == TileType::DownLeft;
+      || map_[index].type() == TileType::DownLeft
+      || map_[index].type() == TileType::UpRight
+      || map_[index].type() == TileType::UpLeft;
 }
 
 void Tilemap::ApplyTileRules() {
@@ -94,6 +96,8 @@ void Tilemap::ApplyTileRules() {
         map_[index].SetType(TileType::DownRight);
       } else if (bottom and left and !right and !top) {
         map_[index].SetType(TileType::DownLeft);
+      } else if (top and right and !left and !bottom) {
+        map_[index].SetType(TileType::UpRight);
       }
     }
   }
@@ -141,12 +145,14 @@ void Tilemap::SetAllTextures() {
   sf::Texture left_up_corner;
   sf::Texture down_right_corner;
   sf::Texture down_left_corner;
+  sf::Texture up_right_corner;
 
   std::string_view vertical_road_path("data/Tiles/Asphalt road/road_asphalt01.png");
   std::string_view horizontal_road_path("data/Tiles/Asphalt road/road_asphalt02.png");
   std::string_view left_up_path("data/Tiles/Asphalt road/road_asphalt25.png");
   std::string_view down_right_path("data/Tiles/Asphalt road/road_asphalt03.png");
   std::string_view down_left_path("data/Tiles/Asphalt road/road_asphalt05.png");
+  std::string_view up_right_path("data/Tiles/Asphalt road/road_asphalt24.png");
 
   std::string_view grass_path("data/Tiles/Grass/land_grass11.png");
   std::string_view road_start_path("data/Tiles/Asphalt road/start_road.png");
@@ -162,6 +168,9 @@ void Tilemap::SetAllTextures() {
     std::cerr << "PROBLEMS FOR ROAD TEXT\n";
   }
   if (!down_right_corner.loadFromFile(down_right_path)) {
+    std::cerr << "PROBLEMS FOR ROAD TEXT\n";
+  }
+  if (!up_right_corner.loadFromFile(up_right_path)) {
     std::cerr << "PROBLEMS FOR ROAD TEXT\n";
   }
   if (!down_left_corner.loadFromFile(down_left_path)) {
@@ -189,6 +198,10 @@ void Tilemap::SetAllTextures() {
     } else if (_.type() == TileType::DownRight) {
       _.SetTextureTo(down_right_corner);
     } else if (_.type() == TileType::DownLeft) {
+      //bugged
+      _.SetTextureTo(up_right_corner);
+    } else if (_.type() == TileType::UpRight) {
+      //bugged
       _.SetTextureTo(down_left_corner);
     } else if (_.type() == TileType::Road) {
       _.SetTextureTo(horizontal_road);
