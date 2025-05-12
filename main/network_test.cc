@@ -114,7 +114,6 @@ int main() {
     if (ImGui::Button("Send"))
     {
       std::cout << "[Photon] Trying to send message: " << message << "\n";
-      ExitGames::Common::Hashtable data;
       bool success = micromachine::NetworkManager::GetLoadBalancingClient().opRaiseEvent(true, ExitGames::Common::JString(message), 1);
       std::cout << "[Photon] Message sent status: " << (success ? "Success" : "Failure") << "\n";
     }
