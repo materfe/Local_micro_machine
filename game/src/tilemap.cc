@@ -216,7 +216,7 @@ void Tilemap::SetAllTileSizeTo(crackitos_core::commons::fp size) {
     return;
   }
 
-  std::array<Tile, kGridWidth * GRID_HEIGHT> temp{};
+  std::array<Tile, kGridWidth * kGridHeight> temp{};
 
   for (std::size_t x = 0; x < map_.size(); x++) {
     map_[x].SetSizeTo(size);
