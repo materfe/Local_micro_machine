@@ -132,8 +132,8 @@ int main() {
       }
     }
 
-    std::cout << "player one : " << number_reached_by_player_one << " player two :" << number_reached_by_player_two
-              << "\n";
+    //std::cout << "player one : " << number_reached_by_player_one << " player two :" << number_reached_by_player_two
+    //          << "\n";
 
     if (number_reached_by_player_one == 8 or number_reached_by_player_two == 8) {
       render.Window().close();
