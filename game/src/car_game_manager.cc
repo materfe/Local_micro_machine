@@ -11,12 +11,6 @@ void Manager::AddPlayer(const player::Car &player) {
   all_players_.push_back(player);
 }
 
-void Manager::KillPlayer(player::Car &car) {
-  car.Kill();
-  car.SetColor(sf::Color::Black);
-  all_dead_players_.push_back(car);
-}
-
 void Manager::SetAllPositions(const crackitos_core::math::Vec2f &start_pos) {
   auto offset = 0.0f;
 

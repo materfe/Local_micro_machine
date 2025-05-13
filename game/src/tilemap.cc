@@ -14,8 +14,8 @@ void Tilemap::InitializeMap() {
   map_.clear();
   const auto size = 16;
 
-  for (int x = 0; x < GRID_WIDTH; x++) {
-    for (int y = 0; y < GRID_HEIGHT; y++) {
+  for (int x = 0; x < kGridWidth; x++) {
+    for (int y = 0; y < kGridHeight; y++) {
       const auto new_tile = Tile({x * size, y * size});
       map_.emplace_back(new_tile);
     }
@@ -26,8 +26,8 @@ void Tilemap::InitializeMap() {
 void Tilemap::GenerateRandomMap() {
   InitializeMap();
 
-  const int radius = std::min(GRID_WIDTH, GRID_HEIGHT) / 3;
-  const sf::Vector2i center(GRID_WIDTH / 2, GRID_HEIGHT / 2);
+  const int radius = std::min(kGridWidth, kGridHeight) / 3;
+  const sf::Vector2i center(kGridWidth / 2, kGridHeight / 2);
 
   const int steps = 720;// plus de subdivisions = cercle plus lisse
   std::set<std::pair<int, int>> unique_positions;
@@ -44,8 +44,8 @@ void Tilemap::GenerateRandomMap() {
 
     // éviter les doublons
     if (unique_positions.insert({x, y}).second) {
-      if (x >= 0 && x < GRID_WIDTH && y >= 0 && y < GRID_HEIGHT) {
-        int index = y * GRID_WIDTH + x;
+      if (x >= 0 && x < kGridWidth && y >= 0 && y < kGridHeight) {
+        int index = y * kGridWidth + x;
         map_[index].SetType(TileType::Road);
         road_.push_back(map_[index]);
       }
@@ -53,15 +53,40 @@ void Tilemap::GenerateRandomMap() {
   }
 
   ApplyTileRules();
-  SetStartAndEnd();
 
   SetAllTextures();
 }
 
+void Tilemap::GenerateCheckpoints() {
+  checkpoints_.clear();
+
+  const int num_checkpoints = 8;
+  const float angle_step = 2 * crackitos_core::commons::kPi / num_checkpoints;
+
+  const int factor = 130;
+  const auto radius = std::min(kGridWidth * factor, kGridHeight * factor) / 3;
+  const sf::Vector2f center(
+      static_cast<float>(kGridWidth * 157.0f / 2),
+      static_cast<float>(kGridHeight * 157.0f / 2)
+  );
+
+  for (int i = 0; i < num_checkpoints; ++i) {
+    float angle = static_cast<float>(i) * angle_step;
+
+    float angle_rad = static_cast<float>(i) * angle_step;
+    float angle_deg = angle_rad * 180.0f / static_cast<float>(crackitos_core::commons::kPi);
+
+    float x = center.x + radius * std::cos(angle);
+    float y = center.y + radius * std::sin(angle);
+
+    checkpoints_.emplace_back(sf::Vector2f(x, y), angle_deg);
+  }
+}
+
 bool Tilemap::IsRoad(const int x, const int y) {
-  if (x < 0 || x >= GRID_WIDTH || y < 0 || y >= GRID_HEIGHT)
+  if (x < 0 || x >= kGridWidth || y < 0 || y >= kGridHeight)
     return false;
-  int index = y * GRID_WIDTH + x;
+  int index = y * kGridWidth + x;
   return map_[index].type() == TileType::Road
       || map_[index].type() == TileType::StartRoad
       || map_[index].type() == TileType::EndRoad
@@ -75,9 +100,9 @@ bool Tilemap::IsRoad(const int x, const int y) {
 }
 
 void Tilemap::ApplyTileRules() {
-  for (int y = 0; y < GRID_HEIGHT; ++y) {
-    for (int x = 0; x < GRID_WIDTH; ++x) {
-      int index = y * GRID_WIDTH + x;
+  for (int y = 0; y < kGridHeight; ++y) {
+    for (int x = 0; x < kGridWidth; ++x) {
+      int index = y * kGridWidth + x;
       if (map_[index].type() != TileType::Road) continue;
 
       bool top = IsRoad(x, y - 1);
@@ -101,38 +126,6 @@ void Tilemap::ApplyTileRules() {
       }
     }
   }
-}
-
-void Tilemap::SetStartAndEnd() {
-  if (map_.empty()) return;
-
-  float min_y = std::numeric_limits<float>::infinity();
-  auto kept_index_start = 0;
-  float max_y = std::numeric_limits<float>::lowest();
-  auto kept_index_end = 0;
-
-  for (int x = 0; x < GRID_WIDTH; x++) {
-    for (int y = 0; y < GRID_HEIGHT; y++) {
-      const auto index = x * GRID_WIDTH + y;
-      //fast return
-      if (map_[index].type() != TileType::Road) {
-        continue;
-      }
-
-      float tile_y = map_[index].Shape().getPosition().y;
-
-      if (tile_y < min_y) {
-        min_y = tile_y;
-        kept_index_end = index;
-      } else if (tile_y > max_y) {
-        max_y = tile_y;
-        kept_index_start = index;
-      }
-    }
-  }
-
-  map_[kept_index_end].SetType(TileType::EndRoad);
-  map_[kept_index_start].SetType(TileType::StartRoad);
 }
 
 void Tilemap::SetAllTextures() {
@@ -203,8 +196,6 @@ void Tilemap::SetAllTextures() {
     } else if (_.type() == TileType::UpRight) {
       //bugged
       _.SetTextureTo(down_left_corner);
-    } else if (_.type() == TileType::Road) {
-      _.SetTextureTo(horizontal_road);
     } else if (_.type() == TileType::Grass) {
       _.SetTextureTo(grass_tex);
     } else if (_.type() == TileType::StartRoad) {
@@ -215,15 +206,38 @@ void Tilemap::SetAllTextures() {
   }
 }
 
-crackitos_core::math::Vec2f Tilemap::StartingPosition() {
-  crackitos_core::math::Vec2f return_pos{};
-  for (auto &tile : map_) {
-    if (tile.type() != TileType::StartRoad) {
-      continue;
-    }
-
-    return_pos = {tile.Shape().getPosition().x, tile.Shape().getPosition().y};
+void Tilemap::SetAllTileSizeTo(crackitos_core::commons::fp size) {
+  const crackitos_core::commons::fp max_size = 300.0f;
+  const crackitos_core::commons::fp min_size = 16.0f;
+  if (size > max_size) {
+    return;
   }
-  return return_pos;
+  if (size < min_size) {
+    return;
+  }
+
+  std::array<Tile, kGridWidth * GRID_HEIGHT> temp{};
+
+  for (std::size_t x = 0; x < map_.size(); x++) {
+    map_[x].SetSizeTo(size);
+
+    temp[x] = map_[x];
+  }
+
+  //resize and replace each element
+  const auto usable_size = size;
+  for (int x = 0; x < kGridWidth; x++) {
+    const auto X = static_cast<float>(x);
+    for (int y = 0; y < kGridHeight; y++) {
+      const auto Y = static_cast<float>(y);
+      const auto index = x * kGridWidth + y;
+      auto replaced_tile = temp[index];
+      replaced_tile.Shape().setPosition({X * usable_size, Y * usable_size});
+
+      map_[index] = replaced_tile;
+    }
+  }
 }
+
+
 }

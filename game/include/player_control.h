@@ -6,8 +6,10 @@
 #define MICROMACHINE_INCLUDE_PLAYER_CONTROL_H_
 
 #include <SFML/System.hpp>
-#include "game_state.h"
 #include <SFML/Graphics.hpp>
+#include <iostream>
+#include <set>
+#include "game_state.h"
 
 namespace micromachine::player {
 
@@ -16,9 +18,10 @@ class Car {
   crackitos_physics::physics::PhysicsWorld &world_;
   crackitos_physics::physics::BodyHandle body_{};
   sf::RectangleShape shape_{};
+  sf::Texture text_; //forced to keep this otherwise get an error because texture destroyed
   crackitos_physics::physics::ColliderHandle collider_{};
   crackitos_core::commons::fp speed_ = 0.0f;
-  bool is_alive = true;
+
 
   void ShapeUpdate() {
     shape_.setPosition({world_.GetMutableBody(body_).position().x, world_.GetMutableBody(body_).position().y});
@@ -35,35 +38,14 @@ class Car {
 
   void Init(GameState &game_state,
             const crackitos_core::math::Vec2f &pos,
-            const crackitos_core::commons::fp mass,
-            const crackitos_core::commons::fp bounciness) {
-
-    const auto type = crackitos_physics::physics::BodyType::Dynamic;
-    body_ = game_state.CreateBody(type, pos, mass);
-
-    const auto car_bounds = crackitos_core::math::AABB({pos.x - 8, pos.y - 8}, {pos.x + 8, pos.y + 8});
-    const auto is_trigger = false;
-    collider_ = game_state.CreateCollider(body_, car_bounds, bounciness, is_trigger);
-
-    const auto shape_size = sf::Vector2f(car_bounds.max_bound().x - car_bounds.min_bound().x,
-                                         car_bounds.max_bound().y - car_bounds.min_bound().y);
-
-    shape_.setPosition({car_bounds.GetCentre().x, car_bounds.GetCentre().y});
-    shape_.setSize(shape_size);
-    shape_.setFillColor(sf::Color::Magenta);
-
-    SetCarDamping(0.9999f);
-  }
+            crackitos_core::commons::fp mass,
+            crackitos_core::commons::fp bounciness);
 
   bool operator==(const Car &car) {
     return this->body_ == car.body_ and this->collider_ == car.collider_;
   }
 
   void Update(float dt) {
-    if (!is_alive) {
-      return;
-    }
-
     crackitos_physics::physics::Body &body = world_.GetMutableBody(body_);
 
     body.Update(dt);
@@ -89,12 +71,6 @@ class Car {
     body.set_position(start_pos);
     ShapeUpdate();
   }
-
-  void Kill() {
-    is_alive = false;
-  }
-
-  [[nodiscard]] bool IsAlive() const { return is_alive; }
 
   sf::RectangleShape &Shape() { return shape_; }
 };

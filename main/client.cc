@@ -4,6 +4,7 @@
 #include <misc/cpp/imgui_stdlib.h>
 
 #include <iostream>
+#include <cstdio>
 
 #include "const.h"
 #include "car_game_manager.h"
@@ -13,37 +14,18 @@
 #include "online_client.h"
 
 namespace client {
-void UpdateDirection() {
-  crackitos_core::math::Vec2f direction(0, 0);
-  if (micromachine::NetworkManager::GetLoadBalancingClient().getLocalPlayer().getNumber() == 2) {
-    //std::cout << "nope, refused\n";
-    return;
-  }
-
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) direction.y = -1.f;
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) direction.y = 1.f;
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) direction.x = -1.f;
-  if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) direction.x = 1.f;
-
-  //send to clients
+void SendInputs(float directionX, float directionY) {
   char buf[64];
-  std::snprintf(buf, sizeof(buf), "%f,%f", direction.x, direction.y);
+  std::snprintf(buf, sizeof(buf), "%f,%f", directionX, directionY);
   ExitGames::Common::JString jsDir(buf);
 
-  micromachine::NetworkManager::GetLoadBalancingClient().opRaiseEvent(true, jsDir, 2);
+  micromachine::NetworkManager::GetLoadBalancingClient().opRaiseEvent(false, jsDir, 2);
 }
 }
 
 int main() {
   static constexpr std::int8_t player_amount = 2;
   static constexpr sf::Vector2f player_one_position(1500.0f, 700.0f);
-  static constexpr sf::Vector2f player_two_position(800.0f, 350.0f);
-  static constexpr float player_radius = 25.0f;
-  static constexpr sf::Color player_one_color(200, 35, 50, 255);
-  static constexpr sf::Color player_two_color(30, 30, 255, 255);
-  static constexpr sf::Color player_outline_color(233, 233, 0, 255);
-  static constexpr float player_given_velocity = 10.0f;
-  static constexpr float player_speed = 5.0f;
 
   //set client
   micromachine::MyClient client;
@@ -55,6 +37,7 @@ int main() {
   tilemap.GenerateRandomMap();
   map = tilemap;
   map.SetAllTileSizeTo(150.0f);
+  map.GenerateCheckpoints();
   micromachine::GameState game_state{};
   micromachine::View::Camera cam{};
 
@@ -62,16 +45,16 @@ int main() {
   //manager ----------------------------------------------------------------------------------
   micromachine::car_game_manager::Manager manager(player_amount);
 
-  micromachine::player::Car player_three(game_state, {500.0f, 300.0f}, 1.0f, 1.0f, 100.0f);
-  micromachine::player::Car player_four(game_state, {500.0f, 200.0f}, 1.0f, 1.0f, 100.0f);
-  player_four.SetColor(sf::Color::White);
-  manager.AddPlayer(player_three);
-  manager.AddPlayer(player_four);
+  micromachine::player::Car player_one(game_state, {500.0f, 300.0f}, 1.0f, 1.0f, 100.0f);
+  micromachine::player::Car player_two(game_state, {500.0f, 200.0f}, 1.0f, 1.0f, 100.0f);
+  player_two.SetColor(sf::Color::White);
+  manager.AddPlayer(player_one);
+  manager.AddPlayer(player_two);
   manager.SetAllPositions({player_one_position.x, player_one_position.y});
 
   //3.
   //set renderer ------------------------------------------------------------------------------
-  auto render = micromachine::rendering::Renderer(WINDOW_WIDTH, WINDOW_HEIGHT, "MicroMachine");
+  auto render = micromachine::rendering::Renderer(kWindowWidth, kWindowHeight, "MicroMachine");
   render.FrameRateLimit(60);
   render.VerticalSyncEnable(true);
   render.Window().setView(cam.view());
@@ -91,9 +74,7 @@ int main() {
   bool isOpen = true;
   sf::Clock deltaClock;
   while (isOpen) {
-
-    const int remoteNr = client.getRemotePlayerNr();
-    const int localNr = client.getLocalPlayerNr();
+    const int localNr = micromachine::MyClient::getLocalPlayerNr();
 
     micromachine::NetworkManager::Tick();
 
@@ -109,7 +90,7 @@ int main() {
 
     //IMGUI --------------------------------------------------------------------------------------------------------
     ImGui::SFML::Update(render.Window(), deltaClock.restart());
-    auto [x, y] = sf::Vector2<int>(WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto [x, y] = sf::Vector2<int>(kWindowWidth, kWindowHeight);
     ImGui::SetNextWindowSize({(float) x, (float) y}, ImGuiCond_Always);
     ImGui::SetNextWindowPos({0.0f, 0.0f}, ImGuiCond_Always);
     ImGui::Begin("Micromachine", nullptr, ImGuiWindowFlags_NoTitleBar);
@@ -136,28 +117,37 @@ int main() {
       game_state.Update(delta);
     }
 
-    //cam.Update(manager);
-
-
-
     render.Window().setView(cam.view());
 
     manager.TicksAll(delta);
 
+    //supposed system to detect when a player reach all checkpoints
+    int number_reached_by_player_one = 0;
+    int number_reached_by_player_two = 0;
+    for (auto &check : map.checkpoints()) {
+      if (check.shape().getGlobalBounds().findIntersection(player_one.Shape().getGlobalBounds())) {
+        number_reached_by_player_one++; //why doesn't it work ?
+      } else if (player_two.Shape().getGlobalBounds().findIntersection(check.shape().getGlobalBounds())) {
+        number_reached_by_player_two++;
+      }
+    }
+
+    std::cout << "player one : " << number_reached_by_player_one << " player two :" << number_reached_by_player_two
+              << "\n";
+
+    if (number_reached_by_player_one == 8 or number_reached_by_player_two == 8) {
+      render.Window().close();
+    }
+
     if (localNr == 1) {
-      player_three.Move({directionX, directionY});         // toi = player
-      player_four.Move({client.direction2().x, client.direction2().y});             // autre = player2
-    }
-    else {
-      player_three.Move({client.direction1().x, client.direction1().y});              // autre = player
-      player_four.Move({directionX, directionY});        // toi = player2
+      player_one.Move({directionX, directionY});         // toi = player
+      player_two.Move({client.direction2().x, client.direction2().y});             // autre = player2
+    } else {
+      player_one.Move({client.direction1().x, client.direction1().y});              // autre = player
+      player_two.Move({directionX, directionY});        // toi = player2
     }
 
-    char buf[64];
-    std::snprintf(buf, sizeof(buf), "%f,%f", directionX, directionY);
-    ExitGames::Common::JString jsDir(buf);
-
-    micromachine::NetworkManager::GetLoadBalancingClient().opRaiseEvent(false, jsDir, 2);
+    client::SendInputs(directionX, directionY);
 
     //DRAW ---------------------------------------------------------------------------------------------------------
     render.Clear();
@@ -167,10 +157,10 @@ int main() {
     for (auto &tile : tilemap.Map()) {
       render.Draw(tile.Shape());
     }
-    for (auto &car : manager.AllPlayers()) {
-      render.Draw(car.Shape());
+    for (auto &check : map.checkpoints()) {
+      render.Draw(check.shape());
     }
-    for (auto &car : manager.AllDeadPlayers()) {
+    for (auto &car : manager.AllPlayers()) {
       render.Draw(car.Shape());
     }
     render.Display();
@@ -180,3 +170,4 @@ int main() {
   ImGui::SFML::Shutdown();
   return 0;
 }
+
